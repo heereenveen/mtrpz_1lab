@@ -34,8 +34,38 @@ def check_correct_nested(markdown_text):
             return False
     return True
 
+def convert_markdown_to_html(input_file, output_file=None):
+    try:
+        with open(input_file, 'r', encoding='utf-8') as f:
+            markdown_text = f.read()
+        if not check_nested_markup(markdown_text) or not check_correct_nested(markdown_text):
+            sys.stderr.write("ПОМИЛКА: Розмітка не є коректною.")
+            sys.exit(1)
+        code_blocks = re.findall(r'```(.*?)```', markdown_text, flags=re.DOTALL)
+        clean_text = convert_paragraphs_to_html(markdown_text)
+        for block in code_blocks:
+            default_block = block
+            block = convert_paragraphs_to_html(block)
+            clean_text = clean_text.replace(f'```{block}```', f'<pre>{default_block}</pre>')
+        paragraphs = clean_text.split('\n\n')
+        html_paragraphs = [f'<p>{text}</p>' for text in paragraphs]
+        html_text = ''.join(html_paragraphs)
+
+        if output_file:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(html_text)
+        else:
+            sys.stdout.write(html_text)
+    except FileNotFoundError:
+        sys.stderr.write("Помилка: Файл не знайдено\n")
+        sys.exit(1)
+    except Exception as e:
+        sys.stderr.write(f"Помилка: {str(e)}\n")
+        sys.exit(1)       
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', metavar='input_file', type=str)
     parser.add_argument('--out', dest='output_file', metavar='output_file', type=str)
     args = parser.parse_args()
+    convert_markdown_to_html(args.input_file, args.output_file)
