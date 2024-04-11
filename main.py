@@ -40,7 +40,7 @@ def check_correct_nested(markdown_text):
             return False
     return True
 
-def convert_markdown_to_html(input_file, output_file=None):
+def convert_markdown_to_format(input_file, output_file=None, output_format=None):
     try:
         with open(input_file, 'r', encoding='utf-8') as f:
             markdown_text = f.read()
@@ -48,30 +48,40 @@ def convert_markdown_to_html(input_file, output_file=None):
             sys.stderr.write("ПОМИЛКА: Розмітка не є коректною.")
             sys.exit(1)
         code_blocks = re.findall(r'```(.*?)```', markdown_text, flags=re.DOTALL)
-        clean_text = convert_paragraphs_to_html(markdown_text)
-        for block in code_blocks:
-            default_block = block
-            block = convert_paragraphs_to_html(block)
-            clean_text = clean_text.replace(f'```{block}```', f'<pre>{default_block}</pre>')
-        paragraphs = clean_text.split('\n\n')
-        html_paragraphs = [f'<p>{text}</p>' for text in paragraphs]
-        html_text = ''.join(html_paragraphs)
-
-        if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(html_text)
+        clean_text = markdown_text
+        if output_format == 'ansi' or (output_format is None and output_file is None):
+            clean_text = convert_md_to_ansi(clean_text)
+            for block in code_blocks:
+                default_block = block
+                block = convert_md_to_ansi(default_block)
+                clean_text = clean_text.replace(f'```{block}```', f'\033[7m{default_block}\033[0m')
         else:
-            sys.stdout.write(html_text)
+            clean_text = convert_paragraphs_to_html(clean_text)
+            for block in code_blocks:
+                default_block = block
+                block = convert_paragraphs_to_html(block)
+                clean_text = clean_text.replace(f'```{block}```', f'<pre>{default_block}</pre>')
+            paragraphs = clean_text.split('\n\n')
+            html_paragraphs = [f'<p>{text}</p>' for text in paragraphs]
+            clean_text = ''.join(html_paragraphs)
+        if output_file:
+            if output_file is None:
+                sys.stdout.write(clean_text)
+            else:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(clean_text)
+        else:
+            sys.stdout.write(clean_text)
     except FileNotFoundError:
         sys.stderr.write("Помилка: Файл не знайдено\n")
         sys.exit(1)
     except Exception as e:
         sys.stderr.write(f"Помилка: {str(e)}\n")
-        sys.exit(1)       
+        sys.exit(1)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', metavar='input_file', type=str)
     parser.add_argument('--out', dest='output_file', metavar='output_file', type=str)
     args = parser.parse_args()
-    convert_markdown_to_html(args.input_file, args.output_file)
+    convert_markdown_to_format(args.input_file, args.output_file, args.output_format)
