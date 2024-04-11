@@ -8,6 +8,12 @@ def convert_paragraphs_to_html(markdown_text):
     markdown_text = re.sub(r'(?<!`)(?!```)`([^`]+)`(?!```)', r'<code>\1</code>', markdown_text)
     return markdown_text
 
+def convert_md_to_ansi(markdown_text):
+    markdown_text = re.sub(r'\*\*(.*?)\*\*', r'\033[1m\1\033[0m', markdown_text)
+    markdown_text = re.sub(r'_(.*?)_', r'\033[3m\1\033[0m', markdown_text)
+    markdown_text = re.sub(r'(?<!`)(?!```)`([^`]+)`(?!```)', r'\033[4m\1\033[0m', markdown_text)
+    return markdown_text
+
 def check_nested_markup(markdown_text):
     clean_text = re.sub(r'```(.*?)```', '', markdown_text, flags=re.DOTALL)
     if re.search(r'\*\*_|_\*\*|`\*`|`\*`|`\*_|_`\*|`\*\*|`\*\*', clean_text):
