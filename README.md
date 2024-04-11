@@ -38,3 +38,9 @@ If there are any issues with the Markdown syntax or if the input file cannot be 
 
 ## Revert-commit
 The [following link](https://github.com/heereenveen/mtrpz_1lab/commit/789b3fd20cd69e7ea2a349c2456b45ca08eedab1) contains our reverse commit.
+
+## Failure commit for CI tests:
+The [following link](https://github.com/heereenveen/mtrpz_1lab/commit/cba4a3fd18f35dd38cd2773df12bd53352e08e23) contains our failure commit.
+
+## Brief conclusions about Unit Tests:
+I think unit tests are very useful and easy to use. I used the unittests library to create my tests, and it didn't take much time to write them, read the documentation - write the code. Testing is very helpful when your code is very "heavy" and structural, when one small change can destroy everything and you can't know why it happened, unit tests help with this. You can never have too many unit tests :3
